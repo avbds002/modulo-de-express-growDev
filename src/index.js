@@ -1,10 +1,14 @@
 import express from "express";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(express.json());
 
 //Rotas
 
-app.listen(3333, () => {
-  console.log("Servidor executando na porta 3333");
+const port = process.env.PORT;
+
+app.listen(port, () => {
+  console.log("Servidor executando na porta " + port);
 });
