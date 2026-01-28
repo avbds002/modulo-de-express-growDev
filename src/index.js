@@ -1,27 +1,18 @@
 import express from "express";
 import * as dotenv from "dotenv";
+import { growDevers } from "./dados.js";
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
 //Rotas
-// GET http://localhost:3000/teste
-app.get("/teste", (req, res) => {
-  res.send({
+// GET http://localhost:3333/growdevers
+app.get("/growdevers", (req, res) => {
+  res.status(200).send({
     ok: true,
-    mensagem: "Teste da api realizado com sucesso",
-  });
-});
-
-// GET http://localhost:3000/about
-app.get("/about", (req, res) => {
-  res.send({
-    nome: "André Vinicius Bezerra da Silva",
-    email: "avbds2077@outlook.com",
-    resumo: "Programador back-end iniciante buscando vagas de estágio",
-    idade: 25,
-    skills: ["React", "NodeJs/Express", "Spring boot web", "JPA", "PostgreSQL"],
+    mensagem: "Growdevers listados com sucesso",
+    dados: growDevers,
   });
 });
 
