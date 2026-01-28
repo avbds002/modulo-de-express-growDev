@@ -6,7 +6,6 @@ const app = express();
 app.use(express.json());
 
 //Rotas
-
 // GET http://localhost:3000/teste
 app.get("/teste", (req, res) => {
   res.send({
