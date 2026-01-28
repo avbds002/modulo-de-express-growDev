@@ -38,6 +38,26 @@ app.post("/growdevers", (req, res) => {
   });
 });
 
+//GET /growdevers/:id
+app.get("/growdevers/:id", (req, res) => {
+  const { id } = req.params;
+
+  const growDever = growDevers.find((item) => item.id === id);
+
+  if (!growDever) {
+    return res.status(404).send({
+      ok: false,
+      mensagem: "Growdever não encontrado",
+    });
+  }
+
+  res.status(200).send({
+    ok: true,
+    mensagem: "Growdever obtido com sucesso!",
+    dados: growDever,
+  });
+});
+
 const port = process.env.PORT;
 
 app.listen(port, () => {
