@@ -8,12 +8,28 @@ const app = express();
 app.use(express.json());
 
 //Rotas
-// GET http://localhost:3333/growdevers
+// GET /growdevers
+//     /growdevers?idade=20
 app.get("/growdevers", (req, res) => {
+  const { idade, nome, email } = req.query;
+
+  let dados = growDevers;
+  if (idade) {
+    dados = dados.filter((item) => item.idade >= Number(idade));
+  }
+
+  if (nome) {
+    dados = dados.filter((item) => item.nome.includes(nome));
+  }
+
+  if (email) {
+    dados = dados.filter((item) => item.email.includes(email));
+  }
+
   res.status(200).send({
     ok: true,
     mensagem: "Growdevers listados com sucesso",
-    dados: growDevers,
+    dados,
   });
 });
 
@@ -57,6 +73,34 @@ app.get("/growdevers/:id", (req, res) => {
     dados: growDever,
   });
 });
+
+//PUT /growdevers/:id
+app.put("/growdevers/:id", (req, res) => {
+  const { id } = req.params;
+  const { nome, email, idade, matriculado } = req.body;
+
+  const growDever = growDevers.find((item) => item.id === id);
+
+  if (!growDever) {
+    return res.status(404).send({
+      ok: false,
+      mensagem: "Growdever não encontrado",
+    });
+  }
+
+  growDever.nome = nome;
+  growDever.email = email;
+  growDever.idade = idade;
+  growDever.matriculado = matriculado;
+
+  res.status(200).send({
+    ok: true,
+    mensagem: "Growdever atualizado com sucesso",
+    dados: growDevers,
+  });
+});
+
+//PATCH /growdevers/:id
 
 const port = process.env.PORT;
 
