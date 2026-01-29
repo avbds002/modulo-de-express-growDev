@@ -100,7 +100,27 @@ app.put("/growdevers/:id", (req, res) => {
   });
 });
 
-//PATCH /growdevers/:id
+//PATCH /growdevers/:id - Toggle do campo matriculado
+app.patch("/growdevers/:id", (req, res) => {
+  const { id } = req.params;
+
+  const growDever = growDevers.find((item) => item.id === id);
+
+  if (!growDever) {
+    res.status(404).send({
+      ok: false,
+      mensagem: "Growdever não encontrado",
+    });
+  }
+
+  growDever.matriculado = !growDever.matriculado;
+
+  res.status(200).send({
+    ok: true,
+    mensagem: "Growdever atualizado",
+    dados: growDevers,
+  });
+});
 
 const port = process.env.PORT;
 
