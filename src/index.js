@@ -122,6 +122,28 @@ app.patch("/growdevers/:id", (req, res) => {
   });
 });
 
+//DELETE /growdevers/:id - Excluir um growdever
+app.delete("/growdevers/:id", (req, res) => {
+  const { id } = req.params;
+
+  const growDeverIndex = growDevers.findIndex((item) => item.id === id);
+
+  if (growDeverIndex < 0) {
+    res.status(404).send({
+      ok: false,
+      mensagem: "Growdever não encontrado",
+    });
+  }
+
+  growDevers.splice(growDeverIndex, 1);
+
+  res.status(200).send({
+    ok: true,
+    mensagem: "Growdever excluído com sucesso",
+    dados: growDevers,
+  });
+});
+
 const port = process.env.PORT;
 
 app.listen(port, () => {
