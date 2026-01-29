@@ -11,137 +11,213 @@ app.use(express.json());
 // GET /growdevers
 //     /growdevers?idade=20
 app.get("/growdevers", (req, res) => {
-  const { idade, nome, email } = req.query;
+  try {
+    const { idade, nome, email } = req.query;
 
-  let dados = growDevers;
-  if (idade) {
-    dados = dados.filter((item) => item.idade >= Number(idade));
+    let dados = growDevers;
+    if (idade) {
+      dados = dados.filter((item) => item.idade >= Number(idade));
+    }
+
+    if (nome) {
+      dados = dados.filter((item) => item.nome.includes(nome));
+    }
+
+    if (email) {
+      dados = dados.filter((item) => item.email.includes(email));
+    }
+
+    res.status(200).send({
+      ok: true,
+      mensagem: "Growdevers listados com sucesso",
+      dados,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      ok: false,
+      mensagem: error.toString(),
+    });
   }
-
-  if (nome) {
-    dados = dados.filter((item) => item.nome.includes(nome));
-  }
-
-  if (email) {
-    dados = dados.filter((item) => item.email.includes(email));
-  }
-
-  res.status(200).send({
-    ok: true,
-    mensagem: "Growdevers listados com sucesso",
-    dados,
-  });
 });
 
 //POST /growdevers
 app.post("/growdevers", (req, res) => {
-  const body = req.body;
+  try {
+    const body = req.body;
 
-  const novoGrowDever = {
-    id: randomUUID(),
-    nome: body.nome,
-    email: body.email,
-    idade: body.idade,
-    matriculado: body.matriculado,
-  };
+    if (!body.nome) {
+      return res.status(400).send({
+        ok: false,
+        mensagem: "O campo nome não foi informado",
+      });
+    }
 
-  growDevers.push(novoGrowDever);
+    if (!body.email) {
+      return res.status(400).send({
+        ok: false,
+        mensagem: "O campo email não foi informado",
+      });
+    }
 
-  res.status(201).send({
-    ok: true,
-    mensagem: "Growdever criado com sucesso",
-    dados: growDevers,
-  });
+    if (!body.idade) {
+      return res.status(400).send({
+        ok: false,
+        mensagem: "O campo idade não foi informado",
+      });
+    }
+
+    if (body.idade < 18) {
+      return res.status(400).send({
+        ok: false,
+        mensagem: "O growdever deve ser maior de idade",
+      });
+    }
+
+    const novoGrowDever = {
+      id: randomUUID(),
+      nome: body.nome,
+      email: body.email,
+      idade: body.idade,
+      matriculado: body.matriculado,
+    };
+
+    growDevers.push(novoGrowDever);
+
+    res.status(201).send({
+      ok: true,
+      mensagem: "Growdever criado com sucesso",
+      dados: growDevers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      ok: false,
+      mensagem: error.toString(),
+    });
+  }
 });
 
 //GET /growdevers/:id
 app.get("/growdevers/:id", (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const growDever = growDevers.find((item) => item.id === id);
+    const growDever = growDevers.find((item) => item.id === id);
 
-  if (!growDever) {
-    return res.status(404).send({
+    if (!growDever) {
+      return res.status(404).send({
+        ok: false,
+        mensagem: "Growdever não encontrado",
+      });
+    }
+
+    res.status(200).send({
+      ok: true,
+      mensagem: "Growdever obtido com sucesso!",
+      dados: growDever,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
       ok: false,
-      mensagem: "Growdever não encontrado",
+      mensagem: error.toString(),
     });
   }
-
-  res.status(200).send({
-    ok: true,
-    mensagem: "Growdever obtido com sucesso!",
-    dados: growDever,
-  });
 });
 
 //PUT /growdevers/:id
 app.put("/growdevers/:id", (req, res) => {
-  const { id } = req.params;
-  const { nome, email, idade, matriculado } = req.body;
+  try {
+    const { id } = req.params;
+    const { nome, email, idade, matriculado } = req.body;
 
-  const growDever = growDevers.find((item) => item.id === id);
+    const growDever = growDevers.find((item) => item.id === id);
 
-  if (!growDever) {
-    return res.status(404).send({
+    if (!growDever) {
+      return res.status(404).send({
+        ok: false,
+        mensagem: "Growdever não encontrado",
+      });
+    }
+
+    growDever.nome = nome;
+    growDever.email = email;
+    growDever.idade = idade;
+    growDever.matriculado = matriculado;
+
+    res.status(200).send({
+      ok: true,
+      mensagem: "Growdever atualizado com sucesso",
+      dados: growDevers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
       ok: false,
-      mensagem: "Growdever não encontrado",
+      mensagem: error.toString(),
     });
   }
-
-  growDever.nome = nome;
-  growDever.email = email;
-  growDever.idade = idade;
-  growDever.matriculado = matriculado;
-
-  res.status(200).send({
-    ok: true,
-    mensagem: "Growdever atualizado com sucesso",
-    dados: growDevers,
-  });
 });
 
 //PATCH /growdevers/:id - Toggle do campo matriculado
 app.patch("/growdevers/:id", (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const growDever = growDevers.find((item) => item.id === id);
+    const growDever = growDevers.find((item) => item.id === id);
 
-  if (!growDever) {
-    res.status(404).send({
+    if (!growDever) {
+      res.status(404).send({
+        ok: false,
+        mensagem: "Growdever não encontrado",
+      });
+    }
+
+    growDever.matriculado = !growDever.matriculado;
+
+    res.status(200).send({
+      ok: true,
+      mensagem: "Growdever atualizado",
+      dados: growDevers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
       ok: false,
-      mensagem: "Growdever não encontrado",
+      mensagem: error.toString(),
     });
   }
-
-  growDever.matriculado = !growDever.matriculado;
-
-  res.status(200).send({
-    ok: true,
-    mensagem: "Growdever atualizado",
-    dados: growDevers,
-  });
 });
 
 //DELETE /growdevers/:id - Excluir um growdever
 app.delete("/growdevers/:id", (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const growDeverIndex = growDevers.findIndex((item) => item.id === id);
+    const growDeverIndex = growDevers.findIndex((item) => item.id === id);
 
-  if (growDeverIndex < 0) {
-    res.status(404).send({
+    if (growDeverIndex < 0) {
+      res.status(404).send({
+        ok: false,
+        mensagem: "Growdever não encontrado",
+      });
+    }
+
+    growDevers.splice(growDeverIndex, 1);
+
+    res.status(200).send({
+      ok: true,
+      mensagem: "Growdever excluído com sucesso",
+      dados: growDevers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
       ok: false,
-      mensagem: "Growdever não encontrado",
+      mensagem: error.toString(),
     });
   }
-
-  growDevers.splice(growDeverIndex, 1);
-
-  res.status(200).send({
-    ok: true,
-    mensagem: "Growdever excluído com sucesso",
-    dados: growDevers,
-  });
 });
 
 const port = process.env.PORT;
