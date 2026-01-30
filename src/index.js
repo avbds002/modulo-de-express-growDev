@@ -2,7 +2,12 @@ import express from "express";
 import * as dotenv from "dotenv";
 import { growDevers } from "./dados.js";
 import { randomUUID } from "crypto";
-import { logMiddleware, logRequestMiddleware } from "./middlewares.js";
+import {
+  logRequestMiddleware,
+  validateGrowdeverMiddleware,
+  bloqueioNaoMatriculado,
+  logBody,
+} from "./middlewares.js";
 dotenv.config();
 
 const app = express();
@@ -43,83 +48,27 @@ app.get("/growdevers", [logRequestMiddleware], (req, res) => {
 });
 
 //POST /growdevers
-app.post("/growdevers", [logMiddleware], (req, res) => {
-  try {
-    const body = req.body;
-
-    if (!body.nome) {
-      return res.status(400).send({
-        ok: false,
-        mensagem: "O campo nome não foi informado",
-      });
-    }
-
-    if (!body.email) {
-      return res.status(400).send({
-        ok: false,
-        mensagem: "O campo email não foi informado",
-      });
-    }
-
-    if (!body.idade) {
-      return res.status(400).send({
-        ok: false,
-        mensagem: "O campo idade não foi informado",
-      });
-    }
-
-    if (body.idade < 18) {
-      return res.status(400).send({
-        ok: false,
-        mensagem: "O growdever deve ser maior de idade",
-      });
-    }
-
-    const novoGrowDever = {
-      id: randomUUID(),
-      nome: body.nome,
-      email: body.email,
-      idade: body.idade,
-      matriculado: body.matriculado,
-    };
-
-    growDevers.push(novoGrowDever);
-
-    res.status(201).send({
-      ok: true,
-      mensagem: "Growdever criado com sucesso",
-      dados: growDevers,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      ok: false,
-      mensagem: error.toString(),
-    });
-  }
-});
-
-//GET /growdevers/:id
-app.get(
-  "/growdevers/:id",
-  [logMiddleware, logRequestMiddleware],
+app.post(
+  "/growdevers",
+  [logRequestMiddleware, validateGrowdeverMiddleware, logBody],
   (req, res) => {
     try {
-      const { id } = req.params;
+      const body = req.body;
 
-      const growDever = growDevers.find((item) => item.id === id);
+      const novoGrowDever = {
+        id: randomUUID(),
+        nome: body.nome,
+        email: body.email,
+        idade: body.idade,
+        matriculado: body.matriculado,
+      };
 
-      if (!growDever) {
-        return res.status(404).send({
-          ok: false,
-          mensagem: "Growdever não encontrado",
-        });
-      }
+      growDevers.push(novoGrowDever);
 
-      res.status(200).send({
+      res.status(201).send({
         ok: true,
-        mensagem: "Growdever obtido com sucesso!",
-        dados: growDever,
+        mensagem: "Growdever criado com sucesso",
+        dados: growDevers,
       });
     } catch (error) {
       console.log(error);
@@ -131,11 +80,10 @@ app.get(
   },
 );
 
-//PUT /growdevers/:id
-app.put("/growdevers/:id", [logMiddleware], (req, res) => {
+//GET /growdevers/:id
+app.get("/growdevers/:id", [logRequestMiddleware], (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, email, idade, matriculado } = req.body;
 
     const growDever = growDevers.find((item) => item.id === id);
 
@@ -146,15 +94,10 @@ app.put("/growdevers/:id", [logMiddleware], (req, res) => {
       });
     }
 
-    growDever.nome = nome;
-    growDever.email = email;
-    growDever.idade = idade;
-    growDever.matriculado = matriculado;
-
     res.status(200).send({
       ok: true,
-      mensagem: "Growdever atualizado com sucesso",
-      dados: growDevers,
+      mensagem: "Growdever obtido com sucesso!",
+      dados: growDever,
     });
   } catch (error) {
     console.log(error);
@@ -165,8 +108,51 @@ app.put("/growdevers/:id", [logMiddleware], (req, res) => {
   }
 });
 
+//PUT /growdevers/:id
+app.put(
+  "/growdevers/:id",
+  [
+    logBody,
+    logRequestMiddleware,
+    validateGrowdeverMiddleware,
+    bloqueioNaoMatriculado,
+  ],
+  (req, res) => {
+    try {
+      const { id } = req.params;
+      const { nome, email, idade, matriculado } = req.body;
+
+      const growDever = growDevers.find((item) => item.id === id);
+
+      if (!growDever) {
+        return res.status(404).send({
+          ok: false,
+          mensagem: "Growdever não encontrado",
+        });
+      }
+
+      growDever.nome = nome;
+      growDever.email = email;
+      growDever.idade = idade;
+      growDever.matriculado = matriculado;
+
+      res.status(200).send({
+        ok: true,
+        mensagem: "Growdever atualizado com sucesso",
+        dados: growDevers,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        ok: false,
+        mensagem: error.toString(),
+      });
+    }
+  },
+);
+
 //PATCH /growdevers/:id - Toggle do campo matriculado
-app.patch("/growdevers/:id", (req, res) => {
+app.patch("/growdevers/:id", [logRequestMiddleware], (req, res) => {
   try {
     const { id } = req.params;
 
@@ -196,7 +182,7 @@ app.patch("/growdevers/:id", (req, res) => {
 });
 
 //DELETE /growdevers/:id - Excluir um growdever
-app.delete("/growdevers/:id", (req, res) => {
+app.delete("/growdevers/:id", [logRequestMiddleware], (req, res) => {
   try {
     const { id } = req.params;
 
