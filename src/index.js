@@ -5,13 +5,26 @@ import { randomUUID } from "crypto";
 import {
   logRequestMiddleware,
   validateGrowdeverMiddleware,
-  bloqueioNaoMatriculado,
+  validateGrowdeverMatricualdoMiddleware,
   logBody,
 } from "./middlewares.js";
+import cors from "cors";
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+/*
+Exemplo de configuração de cors
+app.use(
+  cors({
+    origin: "http://www.growdev.com.br",
+    methods: ["GET", "POST", "PUT", "PATCH"],
+    allowedHeaders: [""]
+  }),
+);
+*/
+
+app.use(cors());
 
 //Rotas
 // GET /growdevers
@@ -115,7 +128,7 @@ app.put(
     logBody,
     logRequestMiddleware,
     validateGrowdeverMiddleware,
-    bloqueioNaoMatriculado,
+    validateGrowdeverMatricualdoMiddleware,
   ],
   (req, res) => {
     try {
