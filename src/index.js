@@ -2,6 +2,7 @@ import express from "express";
 import * as dotenv from "dotenv";
 import { growDevers } from "./dados.js";
 import { randomUUID } from "crypto";
+import { logMiddleware, logRequestMiddleware } from "./middlewares.js";
 dotenv.config();
 
 const app = express();
@@ -10,7 +11,7 @@ app.use(express.json());
 //Rotas
 // GET /growdevers
 //     /growdevers?idade=20
-app.get("/growdevers", (req, res) => {
+app.get("/growdevers", [logRequestMiddleware], (req, res) => {
   try {
     const { idade, nome, email } = req.query;
 
@@ -42,7 +43,7 @@ app.get("/growdevers", (req, res) => {
 });
 
 //POST /growdevers
-app.post("/growdevers", (req, res) => {
+app.post("/growdevers", [logMiddleware], (req, res) => {
   try {
     const body = req.body;
 
@@ -99,35 +100,39 @@ app.post("/growdevers", (req, res) => {
 });
 
 //GET /growdevers/:id
-app.get("/growdevers/:id", (req, res) => {
-  try {
-    const { id } = req.params;
+app.get(
+  "/growdevers/:id",
+  [logMiddleware, logRequestMiddleware],
+  (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const growDever = growDevers.find((item) => item.id === id);
+      const growDever = growDevers.find((item) => item.id === id);
 
-    if (!growDever) {
-      return res.status(404).send({
+      if (!growDever) {
+        return res.status(404).send({
+          ok: false,
+          mensagem: "Growdever não encontrado",
+        });
+      }
+
+      res.status(200).send({
+        ok: true,
+        mensagem: "Growdever obtido com sucesso!",
+        dados: growDever,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
         ok: false,
-        mensagem: "Growdever não encontrado",
+        mensagem: error.toString(),
       });
     }
-
-    res.status(200).send({
-      ok: true,
-      mensagem: "Growdever obtido com sucesso!",
-      dados: growDever,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      ok: false,
-      mensagem: error.toString(),
-    });
-  }
-});
+  },
+);
 
 //PUT /growdevers/:id
-app.put("/growdevers/:id", (req, res) => {
+app.put("/growdevers/:id", [logMiddleware], (req, res) => {
   try {
     const { id } = req.params;
     const { nome, email, idade, matriculado } = req.body;
