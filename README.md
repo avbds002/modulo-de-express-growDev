@@ -4,6 +4,11 @@ Essa api faz parte do módulo de node.js / express da plataforma de treinamento 
 
 O deploy da aplicação foi realizado na plataforma render e documentação da API está no link abaixo:
 
+<strong>Link do deploy da API utilizando render</strong>
+<a>https://academy-growdevers-api.onrender.com</a>
+
+
+<strong>Link da documentação da API</strong>
 <a>https://documenter.getpostman.com/view/25882412/2sBXVoA8c7</a>
 
 Para clonar esse repositório utilize os seguintes comandos:
